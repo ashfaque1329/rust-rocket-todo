@@ -20,6 +20,11 @@ async fn delay(seconds: u64) -> String {
     format!("Waited for {} seconds", seconds)
 }
 
+#[get("/dummy?<name>&<color>")]
+async fn dummy(name: &str,color:&str) -> String {
+    format!("Name:{}, Color:{}", name,color)
+}
+
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
 struct Task<'r> {
@@ -47,7 +52,7 @@ async fn todo(task: Json<Task<'_>>) -> Json<Body> {
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
-        .mount("/", routes![hello,delay,todo])
+        .mount("/", routes![hello,delay,dummy,todo])
         .launch()
         .await?;
 

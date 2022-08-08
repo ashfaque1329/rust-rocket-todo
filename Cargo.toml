@@ -1,10 +1,17 @@
 [package]
 name = "rocket_tutorial"
 version = "0.1.0"
-edition = "2021"
+edition = "2022"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rocket = { version = "0.5.0-rc.2", features = ["json"] }
 rocket_dyn_templates = { version = "0.1.0-rc.2", features = ["tera"] }
+
+[dependencies.rocket_db_pools]
+version = "0.1.0-rc.2"
+features = ["sqlx_sqlite"]
+
+[default.databases.sqlite_logs]
+url = "/path/to/database.sqlite"
