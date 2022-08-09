@@ -9,6 +9,13 @@ Redirect::to(uri!(login))
 use rocket::tokio::time::{sleep, Duration};
 use rocket::serde::{Serialize,Deserialize, json::Json};
 
+use rocket_db_pools::{Database, Connection};
+use rocket_db_pools::sqlx::{self, Row};
+
+#[derive(Database)]
+#[database("sharks")]
+struct Sharks(sqlx::SqlitePool);
+
 #[get("/hello/<name>")]
 async fn hello(name:&str)-> String{
     format!("Hello, {}!",name)
@@ -23,6 +30,14 @@ async fn delay(seconds: u64) -> String {
 #[get("/dummy?<name>&<color>")]
 async fn dummy(name: &str,color:&str) -> String {
     format!("Name:{}, Color:{}", name,color)
+}
+
+#[get("/real_dummy")]
+async fn real_dummy(mut db: Connection<Sharks>) -> Option<String> {
+    sqlx::query("SELECT name FROM sharks")
+        .fetch_one(&mut *db).await
+        .and_then(|r| Ok(r.try_get(0)?))
+        .ok()
 }
 
 #[derive(Deserialize)]
@@ -52,7 +67,8 @@ async fn todo(task: Json<Task<'_>>) -> Json<Body> {
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
-        .mount("/", routes![hello,delay,dummy,todo])
+        .attach(Sharks::init())
+        .mount("/", routes![hello,delay,dummy,real_dummy,todo])
         .launch()
         .await?;
 
